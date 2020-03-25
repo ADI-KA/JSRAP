@@ -82,11 +82,11 @@ public class Product implements Serializable {
         this.description = description;
     }
     
-    public Set<ProductAsset> getProdcutAssets() {
+    public Set<ProductAsset> getProductAssets() {
         return productAssets;
     }
     
-    public void setProdcutAssets(Set<ProductAsset> prodcutAssets) {
+    public void setProductAssets(Set<ProductAsset> prodcutAssets) {
         this.productAssets = prodcutAssets;
     }
 

@@ -1,5 +1,8 @@
 package entitymanager;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.entity.Schema;
 import annotations.ActionDescriptor;
 import annotations.EntityDescriptor;
@@ -14,16 +17,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.beanutils.PropertyUtils;
+import sun.print.resources.serviceui_zh_TW;
 
 /**
  *
@@ -79,7 +77,6 @@ public class EntityReflectionUtil {
 
     public static Object convertJsonObjectToEntityObject(Class myClass, Object jsonEntity, Object entity, boolean create) throws CustomException, ClassNotFoundException {
         Field[] fields = myClass.getDeclaredFields();
-
         for (Field field : fields) {
             try {
                 Object jsonEntityValue = PropertyUtils.getProperty(jsonEntity, field.getName());
@@ -93,23 +90,31 @@ public class EntityReflectionUtil {
                     continue;
                 } 
                 
-                // TO DO create maping * to Many Relation 
+                // TO DO improve mapping * to Many Relation 
+                    
                 if(field.getType().getCanonicalName() == "java.util.Set"){
-//                     Class entityClass = EntityReflectionUtil.createClassWithEntityName("entity." + getParsedTypeNameFromField(field));   
-//                     Object entityObject = null;
-//                     
-//                  
-//                    try {
-//                        entityObject = entityClass.getDeclaredConstructor().newInstance();
-//                        PropertyUtils.setSimpleProperty(entityObject, "id", Integer.class.cast(jsonEntityValue));
-//                        Class<?> castClass = Class.forName(field.getType().getCanonicalName());
-//                        Set<Object> s = new HashSet<>();
-//                        s.add(entityObject);
-//                        PropertyUtils.setSimpleProperty(entity, field.getName(),s);
-//                    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-//                        Logger.getLogger(EntityReflectionUtil.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
 
+                    ArrayList idList = (ArrayList) jsonEntityValue;
+                    Set<Object> objectSet = new HashSet<>();
+
+                    for (int i = 0; i < idList.size(); i++){
+                        Object object = castAndRetriveObject("entity."+ getParsedTypeNameFromField(field) ,idList.get(i).toString());
+                        objectSet.add(object);
+                    }
+
+                    PropertyUtils.setProperty(entity, field.getName(), objectSet);
+
+                }else  if(field.getType().getCanonicalName() == "java.util.List"){
+
+                    ArrayList idList = (ArrayList) jsonEntityValue;
+                    List<Object> objectSet = new ArrayList<>();
+
+                    for (int i = 0; i < idList.size(); i++){
+                        Object object = castAndRetriveObject("entity."+ getParsedTypeNameFromField(field) ,idList.get(i).toString());
+                        objectSet.add(object);
+                    }
+
+                    PropertyUtils.setProperty(entity, field.getName(), objectSet);
                 }else if(field.getType().getCanonicalName().contains("entity")){
                     Object object = castAndRetriveObject(field.getType().getCanonicalName() ,jsonEntityValue.toString());
                     PropertyUtils.setSimpleProperty(entity, field.getName(), object);
@@ -124,6 +129,7 @@ public class EntityReflectionUtil {
 
                 throw ce;
             }
+
         }
         return entity;
     }

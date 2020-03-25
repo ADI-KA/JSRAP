@@ -31,7 +31,7 @@ public class HibernateUtil {
             try {
                 session = HibernateFactory.getSessionFactory().openSession();
                 trs = session.beginTransaction();
-                session.persist(entityObject);
+                session.saveOrUpdate(entityObject);
                 trs.commit();
             } catch (Exception exc) {
 
@@ -107,8 +107,7 @@ public class HibernateUtil {
         Session session;
 
         try {
-            String idType = entityClass.getField("id").getType().getSimpleName();
-           
+            String idType = entityClass.getDeclaredField("id").getType().getSimpleName();
             session = HibernateFactory.getSessionFactory().openSession();
             trs = session.beginTransaction();
             entityObject = idType.equals("Long")?session.get(entityClass, Long.parseLong(id)): session.get(entityClass, Integer.parseInt(id));
