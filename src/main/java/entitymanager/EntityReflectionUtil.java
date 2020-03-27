@@ -1,8 +1,5 @@
 package entitymanager;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import controller.entity.Schema;
 import annotations.ActionDescriptor;
 import annotations.EntityDescriptor;
@@ -21,7 +18,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.beanutils.PropertyUtils;
-import sun.print.resources.serviceui_zh_TW;
 
 /**
  *
@@ -29,54 +25,8 @@ import sun.print.resources.serviceui_zh_TW;
  */
 public class EntityReflectionUtil {
 
-    private static EntityReflectionUtil single_instance = null;
-
-    private EntityReflectionUtil() {
-    }
-
-    public static EntityReflectionUtil getInstance() {
-        if (single_instance == null) {
-            single_instance = new EntityReflectionUtil();
-        }
-
-        return single_instance;
-    }
-
-    public static ArrayList<Method> findSettersOrGetters(Class<?> c, boolean setters) {
-        ArrayList<Method> list = new ArrayList<>();
-        Method[] methods = c.getDeclaredMethods();
-        for (Method method : methods) {
-            if ((isMethodASetter(method) && setters) || (isMethodAGetter(method) && !setters)) {
-                list.add(method);
-            }
-        }
-        return list;
-    }
-
-    private static boolean isMethodAGetter(Method method) {
-        if (Modifier.isPublic(method.getModifiers())
-                && method.getParameterTypes().length == 0) {
-            if (method.getName().matches("^get[A-Z].*")
-                    && !method.getReturnType().equals(void.class)) {
-                return true;
-            }
-            if (method.getName().matches("^is[A-Z].*")
-                    && method.getReturnType().equals(boolean.class)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean isMethodASetter(Method method) {
-        return Modifier.isPublic(method.getModifiers())
-                && method.getReturnType().equals(void.class)
-                && method.getParameterTypes().length == 1
-                && method.getName().matches("^set[A-Z].*");
-    }
-
-    public static Object convertJsonObjectToEntityObject(Class myClass, Object jsonEntity, Object entity, boolean create) throws CustomException, ClassNotFoundException {
-        Field[] fields = myClass.getDeclaredFields();
+    public static Object mapJsonObjectToEntityObject(Object jsonEntity, Object entity, boolean  create) throws CustomException, ClassNotFoundException {
+        Field[] fields = entity.getClass().getDeclaredFields();
         for (Field field : fields) {
             try {
                 Object jsonEntityValue = PropertyUtils.getProperty(jsonEntity, field.getName());
@@ -98,7 +48,7 @@ public class EntityReflectionUtil {
                     Set<Object> objectSet = new HashSet<>();
 
                     for (int i = 0; i < idList.size(); i++){
-                        Object object = castAndRetriveObject("entity."+ getParsedTypeNameFromField(field) ,idList.get(i).toString());
+                        Object object = retrieveSingleEntity("entity."+ getParsedTypeNameFromField(field) ,idList.get(i).toString());
                         objectSet.add(object);
                     }
 
@@ -110,13 +60,13 @@ public class EntityReflectionUtil {
                     List<Object> objectSet = new ArrayList<>();
 
                     for (int i = 0; i < idList.size(); i++){
-                        Object object = castAndRetriveObject("entity."+ getParsedTypeNameFromField(field) ,idList.get(i).toString());
+                        Object object = retrieveSingleEntity("entity."+ getParsedTypeNameFromField(field) ,idList.get(i).toString());
                         objectSet.add(object);
                     }
 
                     PropertyUtils.setProperty(entity, field.getName(), objectSet);
                 }else if(field.getType().getCanonicalName().contains("entity")){
-                    Object object = castAndRetriveObject(field.getType().getCanonicalName() ,jsonEntityValue.toString());
+                    Object object = retrieveSingleEntity(field.getType().getCanonicalName() ,jsonEntityValue.toString());
                     PropertyUtils.setSimpleProperty(entity, field.getName(), object);
                 }else{                
                     Class<?> castClass = Class.forName(field.getType().getCanonicalName());
@@ -129,16 +79,11 @@ public class EntityReflectionUtil {
 
                 throw ce;
             }
-
         }
         return entity;
     }
 
-    
-    
-    
-
-    public static Class createClassWithEntityName(String entityName) throws CustomException {
+    public static Class getClass(String entityName) throws CustomException {
 
         Class myClass = null;
 
@@ -154,8 +99,7 @@ public class EntityReflectionUtil {
         return myClass;
     }
 
-    public static Class[] getClassesFromPackage(String packageName)
-            throws ClassNotFoundException, IOException {
+    public static Class[] getClassesFromPackage(String packageName) throws ClassNotFoundException, IOException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         assert classLoader != null;
         String path = packageName.replace('.', '/');
@@ -187,12 +131,12 @@ public class EntityReflectionUtil {
                 classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
             }
         }
-        
+
         return classes;
     }
 
-    public static ArrayList getFieldListFromClass(Class classe) {
-        Field[] fields = classe.getDeclaredFields();
+    public static ArrayList getFieldListFromClass(Class entityClass) {
+        Field[] fields = entityClass.getDeclaredFields();
         ArrayList fieldsList = new ArrayList();
 
         for (Field field : fields) {
@@ -261,6 +205,7 @@ public class EntityReflectionUtil {
         }
             CustomException ce = new CustomException();
             ce.setDescription("Operation is not permitted!");
+            ce.setCode(405);
             throw ce;
     }
     
@@ -296,13 +241,13 @@ public class EntityReflectionUtil {
                     throw e;
                 }
             }
+
         return number;
     
     }
     
-    public static Object castAndRetriveObject(String entityName, String entityId) throws CustomException{
-     Class entityClass = EntityReflectionUtil.createClassWithEntityName(entityName);
-        EntityReflectionUtil.stopIfOperationIsNotPermitted("GET", entityClass); 
+    public static Object retrieveSingleEntity(String entityName, String entityId) throws CustomException{
+        Class entityClass = EntityReflectionUtil.getClass(entityName);
         return HibernateUtil.getEntityObject(entityId, entityClass);
     }
 

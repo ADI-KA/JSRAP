@@ -28,19 +28,19 @@ public class Retrive {
             @RequestParam("_per_page") Optional<String> perPage,
             @RequestParam("_page") Optional<String> page) throws CustomException {
 
-        Class classe = EntityReflectionUtil.createClassWithEntityName("entity." + entityName);     
-        EntityReflectionUtil.stopIfOperationIsNotPermitted("GET", classe);
-                    
-        Map<String, String[]> parameters = new HashMap<> (request.getParameterMap());        
+        Class entityClass = EntityReflectionUtil.getClass("entity." + entityName);
+        EntityReflectionUtil.stopIfOperationIsNotPermitted("GET", entityClass);
+
+        Map<String, String[]> parameters = new HashMap<> (request.getParameterMap());
      
         int perPageInt = 10;
         int pageInt = 1;
         
-        String queryParams = HibernateUtil.createParametersQuery(classe , parameters);
+        String queryParams = HibernateUtil.createParametersQuery(entityClass , parameters);
         
         if (perPage.isPresent() && page.isPresent()) {     
-        perPageInt = EntityReflectionUtil.validateAndConvertStringToNumber("_per_page", perPage.get());
-         pageInt = EntityReflectionUtil.validateAndConvertStringToNumber("_page", page.get());
+            perPageInt = EntityReflectionUtil.validateAndConvertStringToNumber("_per_page", perPage.get());
+            pageInt = EntityReflectionUtil.validateAndConvertStringToNumber("_page", page.get());
         }
 
         return new EntityListReflection(entityName, perPageInt, pageInt, queryParams);
@@ -53,7 +53,7 @@ public class Retrive {
             method = GET)
     public Object single(@PathVariable("entity") String entityName,
             @PathVariable("id") String entityId) throws CustomException, ClassNotFoundException {              
-        Class entityClass = EntityReflectionUtil.createClassWithEntityName("entity." + entityName);
+        Class entityClass = EntityReflectionUtil.getClass("entity." + entityName);
         EntityReflectionUtil.stopIfOperationIsNotPermitted("GET", entityClass);         
         return HibernateUtil.getEntityObject(entityId, entityClass);
     }

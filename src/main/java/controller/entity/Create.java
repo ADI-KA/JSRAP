@@ -30,27 +30,20 @@ public class Create {
 
     public Object single(@PathVariable("entity") String entityName, @RequestBody Object jsonEntity) throws CustomException, ClassNotFoundException {
         
-        Class entityClass = EntityReflectionUtil.createClassWithEntityName("entity." + entityName);
-        
+        Class entityClass = EntityReflectionUtil.getClass("entity." + entityName);
         EntityReflectionUtil.stopIfOperationIsNotPermitted("POST", entityClass);
-
         Object entityObject = null;
-        
+
         try {    
             entityObject = entityClass.getDeclaredConstructor().newInstance();
-
-            entityObject = EntityReflectionUtil.convertJsonObjectToEntityObject(entityClass, jsonEntity, entityObject, true);
-            
-
+            entityObject = EntityReflectionUtil.mapJsonObjectToEntityObject(jsonEntity, entityObject, true);
             HibernateUtil.persistEntityObject(entityObject);
-
         } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
             CustomException ce = new CustomException();
             ce.setDescription(ex.getMessage());
             Logger.getLogger(Schema.class.getName()).log(Level.SEVERE, null, ex);
             throw ce;
         }
-
         return entityObject;
     }
 }

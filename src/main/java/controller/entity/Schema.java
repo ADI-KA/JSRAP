@@ -12,7 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import org.springframework.web.bind.annotation.RestController;
 
-
+/**
+ *
+ * @author adi
+ */
 @RestController
 public class Schema {
 
@@ -20,24 +23,21 @@ public class Schema {
             value = "/api/schema.json",
             method = GET)
     public Object get(HttpServletRequest request) throws CustomException {
-        
-        HashMap<String, HashMap> classesMap = new HashMap<>();
+        HashMap<String, HashMap> entityClassesMap = new HashMap<>();
 
         try {
-            Class[] classes = EntityReflectionUtil.getClassesFromPackage("entity");
+            Class[] entityClasses = EntityReflectionUtil.getClassesFromPackage("entity");
             
-            for (Class classe : classes) {
-            HashMap<String, ArrayList> classMap = new HashMap<>(); 
-                classMap.put("supportedProperty", EntityReflectionUtil.getFieldListFromClass(classe));
-                 classMap.put("supportedOperation", EntityReflectionUtil.getOperationListFromClass(classe));
-                classesMap.put(classe.getSimpleName(), classMap);
+            for (Class entityClass : entityClasses) {
+            HashMap<String, ArrayList> entityClassMap = new HashMap<>();
+                entityClassMap.put("supportedProperty", EntityReflectionUtil.getFieldListFromClass(entityClass));
+                entityClassMap.put("supportedOperation", EntityReflectionUtil.getOperationListFromClass(entityClass));
+                entityClassesMap.put(entityClass.getSimpleName(), entityClassMap);
             }
-            
         } catch (ClassNotFoundException | IOException ex) {
             Logger.getLogger(Schema.class.getName()).log(Level.SEVERE, null, ex);
-        }    
-        
-        return classesMap;
-    
+        }
+
+        return entityClassesMap;
     }
 }

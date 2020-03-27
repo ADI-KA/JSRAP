@@ -22,11 +22,9 @@ public class Delete {
             method = DELETE)
     public Object single(@PathVariable("entity") String entityName,
             @PathVariable("id") String entityId) throws CustomException {
-        
-        Class entityClass = EntityReflectionUtil.createClassWithEntityName("entity." + entityName);
+        Class entityClass = EntityReflectionUtil.getClass("entity." + entityName);
         EntityReflectionUtil.stopIfOperationIsNotPermitted("DELETE", entityClass);
-        HibernateUtil.deleteEntityObject(entityId, entityClass, entityName);       
-
+        HibernateUtil.deleteEntityObject(entityId, entityClass, entityName);
         return "";
     }
     

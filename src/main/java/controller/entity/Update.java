@@ -25,14 +25,10 @@ public class Update {
     @ResponseStatus(HttpStatus.CREATED)
 
     public Object single(@PathVariable("entity") String entityName, @PathVariable("id") String entityId, @RequestBody Object jsonEntity) throws CustomException, ClassNotFoundException {
-
-        
-        Class entityClass = EntityReflectionUtil.createClassWithEntityName("entity." + entityName);
+        Class entityClass = EntityReflectionUtil.getClass("entity." + entityName);
         EntityReflectionUtil.stopIfOperationIsNotPermitted("PUT", entityClass);
-        Object entityObject;        
-        entityObject = HibernateUtil.getEntityObject(entityId, entityClass);        
-        entityObject = EntityReflectionUtil.convertJsonObjectToEntityObject(entityClass, jsonEntity, entityObject, false);
-          
+        Object entityObject = HibernateUtil.getEntityObject(entityId, entityClass);
+        entityObject = EntityReflectionUtil.mapJsonObjectToEntityObject(jsonEntity, entityObject, false);
         return HibernateUtil.mergeEntityObject(entityObject);
     }
     
