@@ -36,19 +36,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleException(CustomException ex, WebRequest request) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         ExceptionResponse er = new ExceptionResponse();
-        int code = ex.getCode();
-       
-        if(code == 404){
-            er.setCode(HttpStatus.NOT_FOUND.value());
-        }else{
-            er.setCode(HttpStatus.BAD_REQUEST.value());
-        }  
-        
+
         headers.setContentType(MediaType.APPLICATION_JSON);
         er.setDescription(ex.getDescription());
+        er.setCode(ex.getCode().value());
         
         
-        return new ResponseEntity<>(er,HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(er, ex.getCode());
     }
 
     

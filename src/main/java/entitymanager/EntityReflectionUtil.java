@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.springframework.http.HttpStatus;
 
 /**
  *
@@ -34,7 +35,7 @@ public class EntityReflectionUtil {
                     if (create && field.isAnnotationPresent(FieldDescriptor.class) && field.getAnnotation(FieldDescriptor.class).requierd()) {
                         CustomException ce = new CustomException();
                         ce.setDescription(field.getName() + "is a requierd field");
-                        ce.setCode(400);
+                        ce.setCode(HttpStatus.BAD_REQUEST);
                         throw ce;
                     }
                     continue;
@@ -75,6 +76,7 @@ public class EntityReflectionUtil {
             } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
                 CustomException ce = new CustomException();
                 ce.setDescription(ex.getMessage());
+                ce.setCode(HttpStatus.INTERNAL_SERVER_ERROR);
                 Logger.getLogger(Schema.class.getName()).log(Level.SEVERE, null, ex);
 
                 throw ce;
@@ -93,6 +95,7 @@ public class EntityReflectionUtil {
         } catch (ClassNotFoundException e) {
             CustomException ce = new CustomException();
             ce.setDescription(entityName + " is not a valid Entity Name!");
+            ce.setCode(HttpStatus.NOT_FOUND);
             throw ce;
         }
 
@@ -205,7 +208,7 @@ public class EntityReflectionUtil {
         }
             CustomException ce = new CustomException();
             ce.setDescription("Operation is not permitted!");
-            ce.setCode(405);
+            ce.setCode(HttpStatus.METHOD_NOT_ALLOWED);
             throw ce;
     }
     
@@ -231,6 +234,7 @@ public class EntityReflectionUtil {
             } catch (NumberFormatException nfe) {
                 CustomException e = new CustomException();
                 e.setDescription(numberName + " is not a integer value");
+                e.setCode(HttpStatus.BAD_REQUEST);
                 throw e;
             } catch (Exception e) {
                 throw e;
@@ -238,6 +242,7 @@ public class EntityReflectionUtil {
                 if (number < 0 ) {
                     CustomException e = new CustomException();
                     e.setDescription(numberName + " is not a positive integer");
+                    e.setDescription(numberName + " is not a integer value");
                     throw e;
                 }
             }

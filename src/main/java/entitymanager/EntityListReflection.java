@@ -11,6 +11,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.Query;
+import org.springframework.http.HttpStatus;
 
 
 /**
@@ -76,7 +77,7 @@ public final class EntityListReflection {
              if (entityList == null) {
                 CustomException e = new CustomException(); 
                 e.setDescription(context + ": Not Found!");
-                e.setCode(404);                
+                e.setCode(HttpStatus.NOT_FOUND);
                 throw e;
             }
              

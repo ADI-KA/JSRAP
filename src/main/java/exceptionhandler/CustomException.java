@@ -1,6 +1,7 @@
 
 package exceptionhandler;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -15,7 +16,7 @@ public class CustomException extends Exception {
     
     private String context = "/api/contexts/Error";    
 
-    private int code;
+    private HttpStatus code;
 
     /**
      * @return the description
@@ -48,14 +49,14 @@ public class CustomException extends Exception {
         /**
      * @return the code
      */
-    public int getCode() {
+    public HttpStatus getCode() {
         return code;
     }
 
     /**
      * @param code the code to set
      */
-    public void setCode(int code) {
+    public void setCode(HttpStatus code) {
         this.code = code;
     }
       
