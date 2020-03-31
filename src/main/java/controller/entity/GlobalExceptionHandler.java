@@ -1,5 +1,5 @@
 
-package entitymanager;
+package controller.entity;
 
 import exceptionhandler.CustomException;
 import exceptionhandler.ExceptionResponse;
@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
  * @author adi.omanovic
  */
 
-@ControllerAdvice(basePackages = { "controller"} )
+@ControllerAdvice
 @EnableWebMvc
 public class GlobalExceptionHandler {
     
